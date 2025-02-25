@@ -28,7 +28,6 @@ const femaleBtn = document.getElementById('gender-female');
 
 const baseUrl = "https://dungeonquest0.netlify.app/";
 
-// Локации с правильным расширением .png
 const locations = [
     { name: "Темница теней", url: `${baseUrl}img/dungeon background 1.png` },
     { name: "Забытый коридор", url: `${baseUrl}img/dungeon background 2.png` },
@@ -44,28 +43,7 @@ const locations = [
     { name: "Врата судьбы", url: `${baseUrl}img/dungeon background 12.png` }
 ];
 
-const n8nWebhook = "https://your-ngrok-url.ngrok.io/webhook/quest-start";
-
-function sendToN8n(data) {
-    fetch(n8nWebhook, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, ...data })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.message) {
-            plotText.textContent = data.message;
-            optionsDiv.innerHTML = data.options ? data.options.map(opt => `<button onclick="sendToN8n({ choice: '${opt}' })">${opt}</button>`).join('') : '';
-            if (data.location) locationImg.src = data.location;
-            animateScene();
-        }
-    })
-    .catch(error => {
-        console.error("n8n error:", error);
-        plotText.textContent = "Ошибка связи с сервером. Попробуй позже.";
-    });
-}
+plotText.textContent = "Добро пожаловать в DUNGEON QUEST. Выбери свой пол:";
 
 function animateScene() {
     gsap.from('#location', { opacity: 0, scale: 1.1, duration: 1, ease: 'power4.out' });
@@ -73,15 +51,61 @@ function animateScene() {
     gsap.from('#options button', { opacity: 0, y: 20, duration: 1, delay: 0.2, ease: 'elastic.out(1, 0.5)', stagger: 0.1 });
 }
 
-plotText.textContent = "Добро пожаловать в DUNGEON QUEST. Выбери свой пол:";
+femaleBtn.addEventListener('click', () => {
+    plotText.textContent = "Для вас игра очень тяжёлая, попросите мужчину помочь вам и вернитесь.";
+    optionsDiv.innerHTML = '<button onclick="location.reload()">Начать заново</button>';
+    animateScene();
+});
 
-femaleBtn.addEventListener('click', () => sendToN8n({ gender: "female" }));
 maleBtn.addEventListener('click', () => {
     plotText.textContent = "Как настоящий мужчина, выбери сложность подземелья:";
     optionsDiv.innerHTML = `
-        <button onclick="sendToN8n({ difficulty: 'easy' })">Лёгкая</button>
-        <button onclick="sendToN8n({ difficulty: 'medium' })">Средняя</button>
-        <button onclick="sendToN8n({ difficulty: 'hard' })">Сложная</button>
+        <button id="easy">Лёгкая</button>
+        <button id="medium">Средняя</button>
+        <button id="hard">Сложная</button>
     `;
     animateScene();
+
+    document.getElementById('easy').addEventListener('click', () => {
+        plotText.textContent = "Как настоящий мужчина вы решили не заморачиваться, подземелье пройдено, всего доброго!";
+        optionsDiv.innerHTML = '<button onclick="location.reload()">Начать заново</button>';
+        animateScene();
+    });
+
+    document.getElementById('medium').addEventListener('click', () => {
+        startGame(10);
+    });
+
+    document.getElementById('hard').addEventListener('click', () => {
+        startGame(30);
+    });
 });
+
+function startGame(scenes) {
+    let currentScene = 0;
+
+    function getRandomLocation() {
+        const randomIndex = Math.floor(Math.random() * locations.length);
+        return locations[randomIndex];
+    }
+
+    function nextScene() {
+        if (currentScene < scenes) {
+            const location = getRandomLocation();
+            locationImg.src = location.url;
+            plotText.textContent = `Сцена ${currentScene + 1}: Ты в ${location.name}. Ты спускаешься в тёмное подземелье, слышишь шаги за углом.`;
+            optionsDiv.innerHTML = `
+                <button onclick="nextScene()">Пойти налево</button>
+                <button onclick="nextScene()">Пойти направо</button>
+            `;
+            animateScene();
+            currentScene++;
+        } else {
+            plotText.textContent = "Поздравляем, ты прошёл подземелье!";
+            optionsDiv.innerHTML = '<button onclick="location.reload()">Начать заново</button>';
+            animateScene();
+        }
+    }
+
+    nextScene();
+}
