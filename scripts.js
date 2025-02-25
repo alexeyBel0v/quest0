@@ -22,7 +22,7 @@ const optionsDiv = document.getElementById('options');
 const gameSection = document.querySelector('.game');
 
 const baseUrl = window.location.href.includes('netlify') ? "https://dungeonquest0.netlify.app/" : "";
-const togetherApiKey = "0cce7cb2d2ac2d9e970f557a626f00170dff934950c9e7a37a0d529beed4f66d"; // Замени на свой ключ
+const togetherApiKey = "0cce7cb2d2ac2d9e970f557a626f00170dff934950c9e7a37a0d529beed4f66d";
 
 const locations = [
     { name: "Темница теней", url: `${baseUrl}img/dungeon background 1.png` },
@@ -58,11 +58,11 @@ async function getTogetherAIResponse(prompt, sceneNum, locationName) {
                 messages: [
                     { 
                         role: "system", 
-                        content: `Ты — создатель квестов в стиле подземелий. Генерируй короткий сюжет (50-70 слов) для сцены и 2 варианта выбора. Локация: "${locationName}". Формат ответа: { "plot": "...", "options": ["Вариант 1", "Вариант 2"] }` 
+                        content: `Ты — создатель квестов в стиле подземелий. Генерируй короткий сюжет (50-70 слов) для сцены и 2 варианта выбора. Локация: "${locationName}". Формат ответа: { "plot": "...", "options": ["Вариант 1", "Вариант 2"] }. Убедись, что ответ — валидный JSON.` 
                     },
                     { role: "user", content: prompt }
                 ],
-                max_tokens: 150,
+                max_tokens: 200, // Увеличили с 150 до 200
                 temperature: 0.7
             })
         });
@@ -77,7 +77,21 @@ async function getTogetherAIResponse(prompt, sceneNum, locationName) {
         const content = data.choices[0].message.content;
         console.log("Content from Together AI:", content);
 
-        return JSON.parse(content); // Ожидаем JSON от модели
+        try {
+            return JSON.parse(content);
+        } catch (parseError) {
+            console.error("JSON parse error:", parseError);
+            // Запасной вариант: парсим вручную, если JSON обрезан
+            const plotMatch = content.match(/"plot":\s*"([^"]+)"/);
+            const optionsMatch = content.match(/"options":\s*\[\s*"([^"]+)",\s*"([^"]+)"\s*\]/);
+            if (plotMatch && optionsMatch) {
+                return {
+                    plot: plotMatch[1],
+                    options: [optionsMatch[1], optionsMatch[2]]
+                };
+            }
+            throw parseError; // Если не удалось, кидаем ошибку
+        }
     } catch (error) {
         console.error("Together AI error:", error);
         return {
