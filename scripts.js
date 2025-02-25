@@ -17,9 +17,9 @@ if (typeof gsap !== 'undefined') {
     });
 }
 
-const locationImg = document.getElementById('location');
 const plotText = document.getElementById('plot');
 const optionsDiv = document.getElementById('options');
+const gameSection = document.querySelector('.game');
 
 const baseUrl = window.location.href.includes('netlify') ? "https://dungeonquest0.netlify.app/" : "";
 
@@ -38,10 +38,7 @@ const locations = [
     { name: "Врата судьбы", url: `${baseUrl}img/dungeon background 12.png` }
 ];
 
-plotText.textContent = "Добро пожаловать в DUNGEON QUEST. Выбери свой пол:";
-
 function animateScene() {
-    gsap.from('#location', { opacity: 0, scale: 1.1, duration: 1, ease: 'power4.out' });
     gsap.from('#plot', { opacity: 0, y: 20, duration: 1, ease: 'back.out(1.7)' });
     gsap.from('#options button', { opacity: 0, y: 20, duration: 1, delay: 0.2, ease: 'elastic.out(1, 0.5)', stagger: 0.1 });
 }
@@ -49,10 +46,18 @@ function animateScene() {
 optionsDiv.addEventListener('click', (event) => {
     const target = event.target;
 
-    if (target.id === 'gender-female') {
+    if (target.id === 'start') {
+        document.body.style.backgroundImage = `url('${baseUrl}img/malefemale.png')`;
+        gameSection.classList.remove('welcome');
+        plotText.textContent = "Добро пожаловать в DUNGEON QUEST. Выбери свой пол:";
+        optionsDiv.innerHTML = `
+            <button id="gender-male">Мужчина</button>
+            <button id="gender-female">Женщина</button>
+        `;
+        animateScene();
+    } else if (target.id === 'gender-female') {
         plotText.textContent = "Для вас игра очень тяжёлая, попросите мужчину помочь вам и вернитесь.";
         optionsDiv.innerHTML = '<button id="restart">Начать заново</button>';
-        locationImg.src = `${baseUrl}img/malefemale.png`;
         animateScene();
     } else if (target.id === 'gender-male') {
         plotText.textContent = "Как настоящий мужчина, выбери сложность подземелья:";
@@ -61,7 +66,6 @@ optionsDiv.addEventListener('click', (event) => {
             <button id="medium">Средняя</button>
             <button id="hard">Сложная</button>
         `;
-        locationImg.src = `${baseUrl}img/malefemale.png`;
         animateScene();
     } else if (target.id === 'easy') {
         plotText.textContent = "Как настоящий мужчина вы решили не заморачиваться, подземелье пройдено, всего доброго!";
@@ -90,7 +94,7 @@ function startGame(scenes) {
     window.nextScene = function() {
         if (currentScene < scenes) {
             const location = getRandomLocation();
-            locationImg.src = location.url;
+            document.body.style.backgroundImage = `url('${location.url}')`;
             plotText.textContent = `Сцена ${currentScene + 1}: Ты в ${location.name}. Ты спускаешься в тёмное подземелье, слышишь шаги за углом.`;
             optionsDiv.innerHTML = `
                 <button id="left">Пойти налево</button>
