@@ -22,6 +22,7 @@ const optionsDiv = document.getElementById('options');
 const gameSection = document.querySelector('.game');
 
 const baseUrl = window.location.href.includes('netlify') ? "https://dungeonquest0.netlify.app/" : "";
+const deepSeekApiKey = "sk-86563994b0f247b4aee3b4403a0a2092"; // Замени на свой ключ
 
 const locations = [
     { name: "Темница теней", url: `${baseUrl}img/dungeon background 1.png` },
@@ -43,7 +44,28 @@ function animateScene() {
     gsap.from('#options button', { opacity: 0, y: 20, duration: 1, delay: 0.2, ease: 'elastic.out(1, 0.5)', stagger: 0.1 });
 }
 
-optionsDiv.addEventListener('click', (event) => {
+async function getDeepSeekResponse(prompt, sceneNum, locationName) {
+    const response = await fetch("https://api.deepseek.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${deepSeekApiKey}`
+        },
+        body: JSON.stringify({
+            model: "deepseek-chat",
+            messages: [
+                { role: "system", content: "Ты — создатель квестов в стиле подземелий. Генерируй короткий сюжет (50-70 слов) для сцены и 2 варианта выбора. Локация: " + locationName + ". Формат ответа: { \"plot\": \"...\", \"options\": [\"Вариант 1\", \"Вариант 2\"] }" },
+                { role: "user", content: prompt }
+            ],
+            max_tokens: 150,
+            temperature: 0.7
+        })
+    });
+    const data = await response.json();
+    return JSON.parse(data.choices[0].message.content);
+}
+
+optionsDiv.addEventListener('click', async (event) => {
     const target = event.target;
 
     if (target.id === 'start') {
@@ -76,7 +98,7 @@ optionsDiv.addEventListener('click', (event) => {
     } else if (target.id === 'hard') {
         startGame(30);
     } else if (target.id === 'left' || target.id === 'right') {
-        nextScene();
+        nextScene(target.id);
     } else if (target.id === 'restart') {
         location.reload();
     }
@@ -91,14 +113,19 @@ function startGame(scenes) {
         return locations[randomIndex];
     }
 
-    window.nextScene = function() {
+    window.nextScene = async function(choice) {
         if (currentScene < scenes) {
             const location = getRandomLocation();
             document.body.style.backgroundImage = `url('${location.url}')`;
-            plotText.textContent = `Сцена ${currentScene + 1}: Ты в ${location.name}. Ты спускаешься в тёмное подземелье, слышишь шаги за углом.`;
+            const deepSeekData = await getDeepSeekResponse(
+                `Сцена ${currentScene + 1} в подземелье. Что происходит?`,
+                currentScene + 1,
+                location.name
+            );
+            plotText.textContent = deepSeekData.plot;
             optionsDiv.innerHTML = `
-                <button id="left">Пойти налево</button>
-                <button id="right">Пойти направо</button>
+                <button id="left">${deepSeekData.options[0]}</button>
+                <button id="right">${deepSeekData.options[1]}</button>
             `;
             animateScene();
             currentScene++;
