@@ -17,30 +17,28 @@ if (typeof gsap !== 'undefined') {
     });
 }
 
-window.Telegram.WebApp.ready();
-const userId = window.Telegram.WebApp.initDataUnsafe.user?.id || "test_user";
-
+// Элементы интерфейса
 const locationImg = document.getElementById('location');
 const plotText = document.getElementById('plot');
 const optionsDiv = document.getElementById('options');
 
-const baseUrl = "https://dungeonquest0.netlify.app/";
-
+// Локации с относительными путями для локального запуска
 const locations = [
-    { name: "Темница теней", url: `${baseUrl}img/dungeon background 1.png` },
-    { name: "Забытый коридор", url: `${baseUrl}img/dungeon background 2.png` },
-    { name: "Пещера костей", url: `${baseUrl}img/dungeon background 3.png` },
-    { name: "Лабиринт эха", url: `${baseUrl}img/dungeon background 4.png` },
-    { name: "Зал цепей", url: `${baseUrl}img/dungeon background 5.png` },
-    { name: "Тронный зал", url: `${baseUrl}img/dungeon background 6.png` },
-    { name: "Каменный разлом", url: `${baseUrl}img/dungeon background 7.png` },
-    { name: "Подземный храм", url: `${baseUrl}img/dungeon background 8.png` },
-    { name: "Туннель пауков", url: `${baseUrl}img/dungeon background 9.png` },
-    { name: "Затопленная крипта", url: `${baseUrl}img/dungeon background 10.png` },
-    { name: "Огненная бездна", url: `${baseUrl}img/dungeon background 11.png` },
-    { name: "Врата судьбы", url: `${baseUrl}img/dungeon background 12.png` }
+    { name: "Темница теней", url: "img/dungeon background 1.png" },
+    { name: "Забытый коридор", url: "img/dungeon background 2.png" },
+    { name: "Пещера костей", url: "img/dungeon background 3.png" },
+    { name: "Лабиринт эха", url: "img/dungeon background 4.png" },
+    { name: "Зал цепей", url: "img/dungeon background 5.png" },
+    { name: "Тронный зал", url: "img/dungeon background 6.png" },
+    { name: "Каменный разлом", url: "img/dungeon background 7.png" },
+    { name: "Подземный храм", url: "img/dungeon background 8.png" },
+    { name: "Туннель пауков", url: "img/dungeon background 9.png" },
+    { name: "Затопленная крипта", url: "img/dungeon background 10.png" },
+    { name: "Огненная бездна", url: "img/dungeon background 11.png" },
+    { name: "Врата судьбы", url: "img/dungeon background 12.png" }
 ];
 
+// Начальная сцена
 plotText.textContent = "Добро пожаловать в DUNGEON QUEST. Выбери свой пол:";
 
 function animateScene() {
@@ -49,31 +47,35 @@ function animateScene() {
     gsap.from('#options button', { opacity: 0, y: 20, duration: 1, delay: 0.2, ease: 'elastic.out(1, 0.5)', stagger: 0.1 });
 }
 
-document.getElementById('gender-female').addEventListener('click', () => {
-    plotText.textContent = "Для вас игра очень тяжёлая, попросите мужчину помочь вам и вернитесь.";
-    optionsDiv.innerHTML = '<button id="restart">Начать заново</button>';
-    animateScene();
-    document.getElementById('restart').addEventListener('click', () => location.reload());
-});
+// Обработчик событий для кнопок
+optionsDiv.addEventListener('click', (event) => {
+    const target = event.target;
 
-document.getElementById('gender-male').addEventListener('click', () => {
-    plotText.textContent = "Как настоящий мужчина, выбери сложность подземелья:";
-    optionsDiv.innerHTML = `
-        <button id="easy">Лёгкая</button>
-        <button id="medium">Средняя</button>
-        <button id="hard">Сложная</button>
-    `;
-    animateScene();
-
-    document.getElementById('easy').addEventListener('click', () => {
+    if (target.id === 'gender-female') {
+        plotText.textContent = "Для вас игра очень тяжёлая, попросите мужчину помочь вам и вернитесь.";
+        optionsDiv.innerHTML = '<button id="restart">Начать заново</button>';
+        animateScene();
+    } else if (target.id === 'gender-male') {
+        plotText.textContent = "Как настоящий мужчина, выбери сложность подземелья:";
+        optionsDiv.innerHTML = `
+            <button id="easy">Лёгкая</button>
+            <button id="medium">Средняя</button>
+            <button id="hard">Сложная</button>
+        `;
+        animateScene();
+    } else if (target.id === 'easy') {
         plotText.textContent = "Как настоящий мужчина вы решили не заморачиваться, подземелье пройдено, всего доброго!";
         optionsDiv.innerHTML = '<button id="restart">Начать заново</button>';
         animateScene();
-        document.getElementById('restart').addEventListener('click', () => location.reload());
-    });
-
-    document.getElementById('medium').addEventListener('click', () => startGame(10));
-    document.getElementById('hard').addEventListener('click', () => startGame(30));
+    } else if (target.id === 'medium') {
+        startGame(10);
+    } else if (target.id === 'hard') {
+        startGame(30);
+    } else if (target.id === 'left' || target.id === 'right') {
+        nextScene(); // Глобальная функция nextScene будет определена внутри startGame
+    } else if (target.id === 'restart') {
+        location.reload();
+    }
 });
 
 function startGame(scenes) {
@@ -81,11 +83,11 @@ function startGame(scenes) {
 
     function getRandomLocation() {
         const randomIndex = Math.floor(Math.random() * locations.length);
-        console.log("Trying to load:", locations[randomIndex].url); // Отладка пути
+        console.log("Trying to load:", locations[randomIndex].url); // Отладка
         return locations[randomIndex];
     }
 
-    function nextScene() {
+    window.nextScene = function() { // Делаем nextScene глобальной для доступа из кнопок
         if (currentScene < scenes) {
             const location = getRandomLocation();
             locationImg.src = location.url;
@@ -95,16 +97,13 @@ function startGame(scenes) {
                 <button id="right">Пойти направо</button>
             `;
             animateScene();
-            document.getElementById('left').addEventListener('click', nextScene);
-            document.getElementById('right').addEventListener('click', nextScene);
             currentScene++;
         } else {
             plotText.textContent = "Поздравляем, ты прошёл подземелье!";
             optionsDiv.innerHTML = '<button id="restart">Начать заново</button>';
             animateScene();
-            document.getElementById('restart').addEventListener('click', () => location.reload());
         }
-    }
+    };
 
     nextScene();
 }
