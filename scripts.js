@@ -22,7 +22,7 @@ const optionsDiv = document.getElementById('options');
 const gameSection = document.querySelector('.game');
 
 const baseUrl = window.location.href.includes('netlify') ? "https://dungeonquest0.netlify.app/" : "";
-const deepSeekApiKey = "sk-86563994b0f247b4aee3b4403a0a2092";
+const togetherApiKey = "0cce7cb2d2ac2d9e970f557a626f00170dff934950c9e7a37a0d529beed4f66d"; // Замени на свой ключ
 
 const locations = [
     { name: "Темница теней", url: `${baseUrl}img/dungeon background 1.png` },
@@ -44,19 +44,22 @@ function animateScene() {
     gsap.from('#options button', { opacity: 0, y: 20, duration: 1, delay: 0.2, ease: 'elastic.out(1, 0.5)', stagger: 0.1 });
 }
 
-async function getDeepSeekResponse(prompt, sceneNum, locationName) {
+async function getTogetherAIResponse(prompt, sceneNum, locationName) {
     try {
-        console.log("Sending request to DeepSeek with prompt:", prompt);
-        const response = await fetch("https://api.deepseek.com/v1/chat/completions", {
+        console.log("Sending request to Together AI with prompt:", prompt);
+        const response = await fetch("https://api.together.xyz/v1/chat/completions", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${deepSeekApiKey}`
+                "Authorization": `Bearer ${togetherApiKey}`
             },
             body: JSON.stringify({
-                model: "deepseek-chat",
+                model: "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
                 messages: [
-                    { role: "system", content: `Ты — создатель квестов в стиле подземелий. Генерируй короткий сюжет (50-70 слов) для сцены и 2 варианта выбора. Локация: "${locationName}". Формат ответа: { "plot": "...", "options": ["Вариант 1", "Вариант 2"] }` },
+                    { 
+                        role: "system", 
+                        content: `Ты — создатель квестов в стиле подземелий. Генерируй короткий сюжет (50-70 слов) для сцены и 2 варианта выбора. Локация: "${locationName}". Формат ответа: { "plot": "...", "options": ["Вариант 1", "Вариант 2"] }` 
+                    },
                     { role: "user", content: prompt }
                 ],
                 max_tokens: 150,
@@ -69,20 +72,16 @@ async function getDeepSeekResponse(prompt, sceneNum, locationName) {
         }
 
         const data = await response.json();
-        console.log("Raw DeepSeek response:", data);
+        console.log("Raw Together AI response:", data);
 
         const content = data.choices[0].message.content;
-        console.log("Content from DeepSeek:", content);
+        console.log("Content from Together AI:", content);
 
-        if (typeof content === 'string') {
-            return JSON.parse(content);
-        } else {
-            return content;
-        }
+        return JSON.parse(content); // Ожидаем JSON от модели
     } catch (error) {
-        console.error("DeepSeek error:", error);
+        console.error("Together AI error:", error);
         return {
-            plot: `Ошибка в подземелье: связь с DeepSeek потеряна (${error.message}).`,
+            plot: `Ошибка в подземелье: связь с Together AI потеряна (${error.message}).`,
             options: ["Попробовать снова", "Выйти"]
         };
     }
@@ -140,16 +139,16 @@ function startGame(scenes) {
         if (currentScene < scenes) {
             const location = getRandomLocation();
             document.body.style.backgroundImage = `url('${location.url}')`;
-            const deepSeekData = await getDeepSeekResponse(
+            const togetherData = await getTogetherAIResponse(
                 `Сцена ${currentScene + 1} в подземелье. Что происходит?`,
                 currentScene + 1,
                 location.name
             );
-            plotText.textContent = deepSeekData.plot || "Ошибка: сюжет не сгенерирован.";
-            optionsDiv.innerHTML = deepSeekData.options && deepSeekData.options.length === 2 
+            plotText.textContent = togetherData.plot || "Ошибка: сюжет не сгенерирован.";
+            optionsDiv.innerHTML = togetherData.options && togetherData.options.length === 2 
                 ? `
-                    <button id="left">${deepSeekData.options[0]}</button>
-                    <button id="right">${deepSeekData.options[1]}</button>
+                    <button id="left">${togetherData.options[0]}</button>
+                    <button id="right">${togetherData.options[1]}</button>
                 `
                 : '<button id="restart">Начать заново (ошибка вариантов)</button>';
             animateScene();
