@@ -46,6 +46,7 @@ function animateScene() {
 
 async function getDeepSeekResponse(prompt, sceneNum, locationName) {
     try {
+        console.log("Sending request to DeepSeek with prompt:", prompt);
         const response = await fetch("https://api.deepseek.com/v1/chat/completions", {
             method: "POST",
             headers: {
@@ -63,22 +64,25 @@ async function getDeepSeekResponse(prompt, sceneNum, locationName) {
             })
         });
 
-        if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error: ${response.status} - ${response.statusText}`);
+        }
 
         const data = await response.json();
-        console.log("DeepSeek response:", data); // Отладка сырого ответа
-        const content = data.choices[0].message.content;
+        console.log("Raw DeepSeek response:", data);
 
-        // Проверяем, является ли ответ уже JSON-объектом
+        const content = data.choices[0].message.content;
+        console.log("Content from DeepSeek:", content);
+
         if (typeof content === 'string') {
-            return JSON.parse(content); // Парсим строку в JSON
+            return JSON.parse(content);
         } else {
-            return content; // Если уже объект
+            return content;
         }
     } catch (error) {
         console.error("DeepSeek error:", error);
         return {
-            plot: "Ошибка в подземелье: связь с DeepSeek потеряна.",
+            plot: `Ошибка в подземелье: связь с DeepSeek потеряна (${error.message}).`,
             options: ["Попробовать снова", "Выйти"]
         };
     }
