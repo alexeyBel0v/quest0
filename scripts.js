@@ -23,8 +23,6 @@ const userId = window.Telegram.WebApp.initDataUnsafe.user?.id || "test_user";
 const locationImg = document.getElementById('location');
 const plotText = document.getElementById('plot');
 const optionsDiv = document.getElementById('options');
-const maleBtn = document.getElementById('gender-male');
-const femaleBtn = document.getElementById('gender-female');
 
 const baseUrl = "https://dungeonquest0.netlify.app/";
 
@@ -51,13 +49,14 @@ function animateScene() {
     gsap.from('#options button', { opacity: 0, y: 20, duration: 1, delay: 0.2, ease: 'elastic.out(1, 0.5)', stagger: 0.1 });
 }
 
-femaleBtn.addEventListener('click', () => {
+document.getElementById('gender-female').addEventListener('click', () => {
     plotText.textContent = "Для вас игра очень тяжёлая, попросите мужчину помочь вам и вернитесь.";
-    optionsDiv.innerHTML = '<button onclick="location.reload()">Начать заново</button>';
+    optionsDiv.innerHTML = '<button id="restart">Начать заново</button>';
     animateScene();
+    document.getElementById('restart').addEventListener('click', () => location.reload());
 });
 
-maleBtn.addEventListener('click', () => {
+document.getElementById('gender-male').addEventListener('click', () => {
     plotText.textContent = "Как настоящий мужчина, выбери сложность подземелья:";
     optionsDiv.innerHTML = `
         <button id="easy">Лёгкая</button>
@@ -68,17 +67,13 @@ maleBtn.addEventListener('click', () => {
 
     document.getElementById('easy').addEventListener('click', () => {
         plotText.textContent = "Как настоящий мужчина вы решили не заморачиваться, подземелье пройдено, всего доброго!";
-        optionsDiv.innerHTML = '<button onclick="location.reload()">Начать заново</button>';
+        optionsDiv.innerHTML = '<button id="restart">Начать заново</button>';
         animateScene();
+        document.getElementById('restart').addEventListener('click', () => location.reload());
     });
 
-    document.getElementById('medium').addEventListener('click', () => {
-        startGame(10);
-    });
-
-    document.getElementById('hard').addEventListener('click', () => {
-        startGame(30);
-    });
+    document.getElementById('medium').addEventListener('click', () => startGame(10));
+    document.getElementById('hard').addEventListener('click', () => startGame(30));
 });
 
 function startGame(scenes) {
@@ -86,6 +81,7 @@ function startGame(scenes) {
 
     function getRandomLocation() {
         const randomIndex = Math.floor(Math.random() * locations.length);
+        console.log("Trying to load:", locations[randomIndex].url); // Отладка пути
         return locations[randomIndex];
     }
 
@@ -95,15 +91,18 @@ function startGame(scenes) {
             locationImg.src = location.url;
             plotText.textContent = `Сцена ${currentScene + 1}: Ты в ${location.name}. Ты спускаешься в тёмное подземелье, слышишь шаги за углом.`;
             optionsDiv.innerHTML = `
-                <button onclick="nextScene()">Пойти налево</button>
-                <button onclick="nextScene()">Пойти направо</button>
+                <button id="left">Пойти налево</button>
+                <button id="right">Пойти направо</button>
             `;
             animateScene();
+            document.getElementById('left').addEventListener('click', nextScene);
+            document.getElementById('right').addEventListener('click', nextScene);
             currentScene++;
         } else {
             plotText.textContent = "Поздравляем, ты прошёл подземелье!";
-            optionsDiv.innerHTML = '<button onclick="location.reload()">Начать заново</button>';
+            optionsDiv.innerHTML = '<button id="restart">Начать заново</button>';
             animateScene();
+            document.getElementById('restart').addEventListener('click', () => location.reload());
         }
     }
 
