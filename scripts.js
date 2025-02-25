@@ -17,28 +17,27 @@ if (typeof gsap !== 'undefined') {
     });
 }
 
-// Элементы интерфейса
 const locationImg = document.getElementById('location');
 const plotText = document.getElementById('plot');
 const optionsDiv = document.getElementById('options');
 
-// Локации с относительными путями для локального запуска
+const baseUrl = window.location.href.includes('netlify') ? "https://dungeonquest0.netlify.app/" : "";
+
 const locations = [
-    { name: "Темница теней", url: "img/dungeon background 1.png" },
-    { name: "Забытый коридор", url: "img/dungeon background 2.png" },
-    { name: "Пещера костей", url: "img/dungeon background 3.png" },
-    { name: "Лабиринт эха", url: "img/dungeon background 4.png" },
-    { name: "Зал цепей", url: "img/dungeon background 5.png" },
-    { name: "Тронный зал", url: "img/dungeon background 6.png" },
-    { name: "Каменный разлом", url: "img/dungeon background 7.png" },
-    { name: "Подземный храм", url: "img/dungeon background 8.png" },
-    { name: "Туннель пауков", url: "img/dungeon background 9.png" },
-    { name: "Затопленная крипта", url: "img/dungeon background 10.png" },
-    { name: "Огненная бездна", url: "img/dungeon background 11.png" },
-    { name: "Врата судьбы", url: "img/dungeon background 12.png" }
+    { name: "Темница теней", url: `${baseUrl}img/dungeon background 1.png` },
+    { name: "Забытый коридор", url: `${baseUrl}img/dungeon background 2.png` },
+    { name: "Пещера костей", url: `${baseUrl}img/dungeon background 3.png` },
+    { name: "Лабиринт эха", url: `${baseUrl}img/dungeon background 4.png` },
+    { name: "Зал цепей", url: `${baseUrl}img/dungeon background 5.png` },
+    { name: "Тронный зал", url: `${baseUrl}img/dungeon background 6.png` },
+    { name: "Каменный разлом", url: `${baseUrl}img/dungeon background 7.png` },
+    { name: "Подземный храм", url: `${baseUrl}img/dungeon background 8.png` },
+    { name: "Туннель пауков", url: `${baseUrl}img/dungeon background 9.png` },
+    { name: "Затопленная крипта", url: `${baseUrl}img/dungeon background 10.png` },
+    { name: "Огненная бездна", url: `${baseUrl}img/dungeon background 11.png` },
+    { name: "Врата судьбы", url: `${baseUrl}img/dungeon background 12.png` }
 ];
 
-// Начальная сцена
 plotText.textContent = "Добро пожаловать в DUNGEON QUEST. Выбери свой пол:";
 
 function animateScene() {
@@ -47,13 +46,13 @@ function animateScene() {
     gsap.from('#options button', { opacity: 0, y: 20, duration: 1, delay: 0.2, ease: 'elastic.out(1, 0.5)', stagger: 0.1 });
 }
 
-// Обработчик событий для кнопок
 optionsDiv.addEventListener('click', (event) => {
     const target = event.target;
 
     if (target.id === 'gender-female') {
         plotText.textContent = "Для вас игра очень тяжёлая, попросите мужчину помочь вам и вернитесь.";
         optionsDiv.innerHTML = '<button id="restart">Начать заново</button>';
+        locationImg.src = `${baseUrl}img/malefemale.png`;
         animateScene();
     } else if (target.id === 'gender-male') {
         plotText.textContent = "Как настоящий мужчина, выбери сложность подземелья:";
@@ -62,6 +61,7 @@ optionsDiv.addEventListener('click', (event) => {
             <button id="medium">Средняя</button>
             <button id="hard">Сложная</button>
         `;
+        locationImg.src = `${baseUrl}img/malefemale.png`;
         animateScene();
     } else if (target.id === 'easy') {
         plotText.textContent = "Как настоящий мужчина вы решили не заморачиваться, подземелье пройдено, всего доброго!";
@@ -72,7 +72,7 @@ optionsDiv.addEventListener('click', (event) => {
     } else if (target.id === 'hard') {
         startGame(30);
     } else if (target.id === 'left' || target.id === 'right') {
-        nextScene(); // Глобальная функция nextScene будет определена внутри startGame
+        nextScene();
     } else if (target.id === 'restart') {
         location.reload();
     }
@@ -83,11 +83,11 @@ function startGame(scenes) {
 
     function getRandomLocation() {
         const randomIndex = Math.floor(Math.random() * locations.length);
-        console.log("Trying to load:", locations[randomIndex].url); // Отладка
+        console.log("Trying to load:", locations[randomIndex].url);
         return locations[randomIndex];
     }
 
-    window.nextScene = function() { // Делаем nextScene глобальной для доступа из кнопок
+    window.nextScene = function() {
         if (currentScene < scenes) {
             const location = getRandomLocation();
             locationImg.src = location.url;
