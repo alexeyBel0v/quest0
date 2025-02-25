@@ -1,0 +1,116 @@
+body {
+    margin: 0;
+    font-family: 'Press Start 2P', cursive;
+    background: #1A1D2E;
+    color: #FFFFFF;
+    overflow-x: hidden;
+}
+
+header {
+    padding: 20px;
+    background: #2A2F4F;
+    text-align: center;
+}
+
+.glitch {
+    font-size: 24px;
+    position: relative;
+    color: #FFFFFF;
+}
+
+.glitch::before, .glitch::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.glitch::before {
+    color: #00DDEB;
+    animation: glitch 1s infinite linear alternate-reverse;
+    clip-path: polygon(0 0, 100% 0, 100% 33%, 0 33%);
+}
+
+.glitch::after {
+    color: #FF007A;
+    animation: glitch 0.8s infinite linear alternate-reverse;
+    clip-path: polygon(0 66%, 100% 66%, 100% 100%, 0 100%);
+}
+
+@keyframes glitch {
+    0% { transform: translate(0); }
+    20% { transform: translate(-2px, 2px); }
+    40% { transform: translate(2px, -2px); }
+    60% { transform: translate(-2px, 0); }
+    80% { transform: translate(2px, 2px); }
+    100% { transform: translate(0); }
+}
+
+.game {
+    width: 100%;
+    max-width: 600px;
+    margin: 20px auto;
+    text-align: center;
+    padding: 20px;
+}
+
+#location {
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 2px solid #00DDEB;
+    box-shadow: 0 0 20px rgba(0, 221, 235, 0.5);
+}
+
+#plot {
+    margin: 20px 0;
+    font-size: 14px;
+    color: #B0B0B0;
+    background: #2A2F4F;
+    padding: 15px;
+    border-radius: 10px;
+    text-shadow: 0 0 5px rgba(0, 221, 235, 0.3);
+}
+
+#options {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+button {
+    background: #FF007A;
+    border: none;
+    padding: 10px 20px;
+    color: #FFFFFF;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(255, 0, 122, 0.7);
+}
+
+@media (max-width: 480px) {
+    .glitch {
+        font-size: 18px;
+    }
+    #location {
+        height: 200px;
+    }
+    #plot {
+        font-size: 12px;
+    }
+    button {
+        font-size: 10px;
+        padding: 8px 16px;
+    }
+}
