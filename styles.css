@@ -73,8 +73,11 @@ header {
 #plot {
     margin: 20px 0;
     font-size: 14px;
-    color: #B0B0B0;
-    text-shadow: 0 0 5px rgba(0, 221, 235, 0.3);
+    color: #FFFFFF; /* Белый для контраста */
+    background: rgba(42, 47, 79, 0.8); /* Чуть темнее фон */
+    padding: 15px;
+    border-radius: 10px;
+    text-shadow: 2px 2px 4px #000000, 0 0 5px rgba(0, 221, 235, 0.7); /* Обводка и неоновая тень */
 }
 
 #options {
